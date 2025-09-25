@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EPUB Exam Demo</title>
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; 
+      padding: 0; 
+      height: 100vh;
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    }
+
+    #container {
+      width: 85%; 
+      max-width: 850px; 
+      background: #fff; 
+      padding: 30px;
+      border-radius: 16px; 
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      position: relative;
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    h2 { 
+      text-align: center; 
+      margin-top: 0; 
+      color: #333; 
+    }
+
+    /* Progress bar */
+    #progress {
+      height: 12px;
+      background: #eee;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      overflow: hidden;
+    }
+    #progressBar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff416c, #ff4b2b);
+      transition: width 0.5s ease;
+    }
+
+    .question {
+      display: none;
+      padding: 20px;
+      border-radius: 12px;
+      background: #fdfdfd;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.1);
+      animation: slideIn 0.6s ease;
+    }
+    .active {
+      display: block;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(50px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    button {
+      margin: 10px 5px; 
+      padding: 12px 20px; 
+      border: none;
+      background: linear-gradient(45deg, #ff416c, #ff4b2b);
+      color: white; 
+      border-radius: 30px; 
+      cursor: pointer;
+      font-size: 16px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    button:hover { 
+      transform: scale(1.05); 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    #timer { 
+      font-weight: bold; 
+      color: #e63946; 
+      position: absolute; 
+      top: 15px; 
+      right: 20px; 
+      font-size: 18px;
+    }
+
+    #result {
+      font-size: 20px; 
+      font-weight: bold; 
+      text-align: center;
+      margin-top: 20px; 
+      padding: 18px; 
+      background: #d4edda; 
+      color: #155724;
+      border-radius: 10px;
+      display: none;
+      animation: popUp 0.6s ease;
+    }
+
+    @keyframes popUp {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .options { margin-top: 12px; }
+    .options label { 
+      display: block; 
+      margin-bottom: 10px; 
+      padding: 8px;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+      cursor: pointer; 
+    }
+    .options label:hover { background: #f1f1f1; }
+  </style>
+</head>
+<body>
+
+  <div id="container">
+    <h2>📖 EPUB Online Exam Demo</h2>
+    <div id="timer">Time: 30s</div>
+
+    <!-- Progress bar -->
+    <div id="progress"><div id="progressBar"></div></div>
+
+    <form id="quizForm">
+      <div class="question active">
+        <p><b>Q1:</b> EPUB stands for?</p>
+        <div class="options">
+          <label><input type="radio" name="q1" value="correct"> Electronic Publication</label>
+          <label><input type="radio" name="q1" value="wrong"> Easy Publish</label>
+          <label><input type="radio" name="q1" value="wrong"> Ebook Public</label>
+        </div>
+      </div>
+
+      <div class="question">
+        <p><b>Q2:</b> Which language adds interactivity in EPUB?</p>
+        <div class="options">
+          <label><input type="radio" name="q2" value="wrong"> HTML</label>
+          <label><input type="radio" name="q2" value="wrong"> CSS</label>
+          <label><input type="radio" name="q2" value="correct"> JavaScript</label>
+        </div>
+      </div>
+
+      <div class="question">
+        <p><b>Q3:</b> EPUB files are mostly used for?</p>
+        <div class="options">
+          <label><input type="radio" name="q3" value="wrong"> Music</label>
+          <label><input type="radio" name="q3" value="correct"> eBooks</label>
+          <label><input type="radio" name="q3" value="wrong"> Videos</label>
+        </div>
+      </div>
+    </form>
+
+    <div style="text-align:center;">
+      <button onclick="prevQuestion()">⬅ Prev</button>
+      <button onclick="nextQuestion()">Next ➡</button>
+      <button onclick="submitQuiz()">Submit ✅</button>
+    </div>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    let current = 0;
+    const questions = document.querySelectorAll('.question');
+    const timerElement = document.getElementById('timer');
+    const resultBox = document.getElementById('result');
+    const progressBar = document.getElementById('progressBar');
+    let timeLeft = 30;
+
+    function updateProgress() {
+      let percent = ((current + 1) / questions.length) * 100;
+      progressBar.style.width = percent + "%";
+    }
+
+    function showQuestion(i) {
+      questions.forEach((q, index) => {
+        q.classList.remove('active');
+        if (index === i) {
+          q.classList.add('active');
+        }
+      });
+      updateProgress();
+    }
+
+    function nextQuestion() {
+      if (current < questions.length - 1) {
+        current++;
+        showQuestion(current);
+      }
+    }
+
+    function prevQuestion() {
+      if (current > 0) {
+        current--;
+        showQuestion(current);
+      }
+    }
+
+    function submitQuiz() {
+      clearInterval(countdown);
+      let score = 0;
+      const answers = document.querySelectorAll('input[type="radio"]:checked');
+      answers.forEach(ans => {
+        if (ans.value === "correct") score++;
+      });
+      resultBox.style.display = "block";
+      resultBox.innerHTML = `✅ Your Score: ${score} / ${questions.length}`;
+    }
+
+    // Timer
+    const countdown = setInterval(() => {
+      timeLeft--;
+      timerElement.textContent = "Time: " + timeLeft + "s";
+      if (timeLeft <= 0) {
+        clearInterval(countdown);
+        alert("⏰ Time Up! Submitting automatically.");
+        submitQuiz();
+      }
+    }, 1000);
+
+    updateProgress();
+  </script>
+</body>
+</html>
